@@ -13,16 +13,22 @@ class Flock:
         self.max_velocity = np.array([10, 20])
 
         # forces
-        self.turnaround_strength = 2
+        self.turnaround_strength = 5
         self.cohesion_strength = 0.01
         self.separation_strength = 2.0
         self.separation_distance = 30.0
         self.alignment_strength = 0.125
         self.alignment_distance = 50
+        self.flee_strength = 1.0
+        self.flee_distance = 100.0
 
         # boids
         self.positions = np.empty((0, 2), float)
         self.velocities = np.empty((0, 2), float)
+
+        # predator
+        self.predator = np.array(self.max_position - (self.max_position - self.min_position) / 2)
+        self.predator_speed = 50
 
     def add(self):
         if len(self.positions) >= self.max_boids:
@@ -40,10 +46,18 @@ class Flock:
         rand = rand.reshape(1, 2)
         return rand
 
-    def update(self, timestep):
+    def update(self, timestep, predator_movement):
+        self.predator += timestep * np.array(predator_movement) * self.predator_speed
+
         self.velocities += timestep * sum(
             force()
-            for force in [self.turnaround_force, self.cohesion_force, self.separation_force, self.alignment_force]
+            for force in [
+                self.flee_force,
+                self.turnaround_force,
+                self.cohesion_force,
+                self.separation_force,
+                self.alignment_force,
+            ]
         )
 
         # boid movement
@@ -65,6 +79,12 @@ class Flock:
             forces.append(force)
         return np.array(forces)
 
+    def flee_force(self):
+        # boids flee from predator
+        displacements = self.positions[np.newaxis] - self.predator
+        are_close = (displacements**2).sum(-1) ** 0.5 <= self.flee_distance
+        return self.flee_strength * np.where(are_close[..., None], displacements, 0).sum(0)
+
     def cohesion_force(self):
         # boids attract each other
         return self.cohesion_strength * (self.positions.mean(axis=0)[np.newaxis] - self.positions)
@@ -83,6 +103,8 @@ class Flock:
         return -self.alignment_strength * np.where(are_close[..., None], velocity_differences, 0).mean(0)
 
     def render(self, surface):
+        pygame.draw.circle(surface, "green", self.predator, 10)
+
         for pos, velocity in zip(self.positions, self.velocities):
             angle = math.atan2(velocity[1], velocity[0])
             ax = math.cos(angle) * 30
