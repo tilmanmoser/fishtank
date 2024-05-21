@@ -12,7 +12,7 @@ class Aquarium:
         self.screen = pygame.display.set_mode((800, 600))
         self.clock = pygame.Clock()
 
-        self.flock = Flock(max=25, area=(50, 50, self.screen.get_width() - 50, self.screen.get_height() - 50))
+        self.flock = Flock(max=25, area=(100, 100, self.screen.get_width() - 100, self.screen.get_height() - 100))
         for i in range(50):
             self.flock.add()
 

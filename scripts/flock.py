@@ -14,16 +14,15 @@ class Flock:
         self.max_velocity = np.array([10, 20])
 
         # forces
-        self.turnaround_strength = 5
+        self.turnaround_strength = 20
         self.cohesion_strength = 0.01
-        self.separation_strength = 2.0
+        self.separation_strength = 1.0
         self.separation_distance = 30.0
         self.alignment_strength = 0.125
         self.alignment_distance = 50
         self.flee_strength = 1.0
-        self.flee_distance = 100.0
-        self.attraction_strength = 0.05
-        self.attraction_distance = 100.0
+        self.flee_distance = 50.0
+        self.attraction_strength = 0.1
 
         # boids
         self.positions = np.empty((0, 2), float)
@@ -59,6 +58,7 @@ class Flock:
 
     def update(self, timestep, predator_movement):
         self.predator += timestep * np.array(predator_movement) * self.predator_speed
+        self.predator = np.clip(self.predator, self.min_position, self.max_position)
 
         for item in self.food.copy():
             item[1] += timestep * self.food_speed
@@ -69,14 +69,15 @@ class Flock:
         self.velocities += timestep * sum(
             force()
             for force in [
-                self.attraction_force,
-                self.flee_force,
-                self.turnaround_force,
                 self.cohesion_force,
                 self.separation_force,
                 self.alignment_force,
+                self.attraction_force,
+                self.flee_force,
+                self.turnaround_force,
             ]
         )
+        np.clip(self.velocities, self.min_velocity, self.max_velocity)
 
         # boid movement
         self.positions += timestep * self.velocities
