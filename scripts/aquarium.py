@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import cv2
 import pygame
 
@@ -34,6 +35,9 @@ class Aquarium:
 
         # ticks / fps
         self.clock = pygame.Clock()
+
+        # hide mouse
+        pygame.mouse.set_visible(False)
 
     def load_boids(self):
         path = os.path.join("data/outbound")
