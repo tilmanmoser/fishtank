@@ -14,8 +14,8 @@ class Flock:
         self.max_boids = max
         self.min_position = np.array(area[:2])
         self.max_position = np.array(area[2:])
-        self.min_velocity = np.array([0, -20])
-        self.max_velocity = np.array([10, 20])
+        self.min_velocity = np.array([-40, -40])
+        self.max_velocity = np.array([40, 40])
 
         # forces
         self.turnaround_strength = 20
@@ -25,7 +25,7 @@ class Flock:
         self.alignment_strength = 0.125
         self.alignment_distance = 50
         self.flee_strength = 1.0
-        self.flee_distance = 50.0
+        self.flee_distance = 150.0
         self.attraction_strength = 0.1
 
         # boids
@@ -40,6 +40,9 @@ class Flock:
         # food
         self.food = []
         self.food_speed = 20
+
+        # debug
+        self.font = pygame.font.Font(pygame.font.get_default_font(), 20)
 
     def add(self):
         if len(self.positions) >= self.max_boids:
@@ -82,7 +85,7 @@ class Flock:
                 self.turnaround_force,
             ]
         )
-        np.clip(self.velocities, self.min_velocity, self.max_velocity)
+        self.velocities = np.clip(self.velocities, self.min_velocity, self.max_velocity)
 
         # boid movement
         self.positions += timestep * self.velocities
@@ -149,3 +152,4 @@ class Flock:
             ay = math.sin(angle) * 30
             pygame.draw.circle(surface, "blue", pos, 10)
             pygame.draw.line(surface, "red", pos, pos + np.array([ax, ay]), 2)
+            surface.blit(self.font.render(f"{int(velocity[0])},{int(velocity[1])}", True, "white"), pos)
