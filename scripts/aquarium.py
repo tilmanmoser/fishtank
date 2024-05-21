@@ -1,8 +1,10 @@
+import os
+import cv2
 import pygame
 
 from scripts.flock import Flock
 
-FPS = 60
+FPS = 25  # adjust to video FPS
 
 
 class Aquarium:
@@ -15,6 +17,9 @@ class Aquarium:
         self.display = pygame.Surface((1280, 720))
         self.screen = pygame.display.set_mode(self.display.get_size(), pygame.RESIZABLE)
         self.on_resize()
+
+        # background video
+        self.video = cv2.VideoCapture(os.path.join("data/video/underwater.mp4"))
 
         # objects
         self.movement = [False, False, False, False]
@@ -39,45 +44,60 @@ class Aquarium:
 
     def render(self):
         self.display.fill((0, 0, 0, 0))
+        self.display.blit(self.get_video_frame(), (0, 0))
         self.flock.render(self.display)
 
         self.screen.fill((0, 0, 0, 0))
         self.screen.blit(pygame.transform.smoothscale_by(self.display, self.scale), self.margin)
         pygame.display.flip()
 
+    def get_video_frame(self):
+        if not self.video.isOpened():
+            return pygame.Surface(self.display.get_size())
+        success, frame = self.video.read()
+        if success:
+            surface = pygame.image.frombuffer(frame.tobytes(), frame.shape[1::-1], "BGR")
+            return surface
+        else:
+            self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            return self.get_video_frame()
+
     def run(self):
-        running = True
-        while running:
+        try:
+            running = True
+            while running:
 
-            self.update()
-            self.render()
+                self.update()
+                self.render()
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type in (pygame.VIDEOEXPOSE, pygame.VIDEORESIZE):
-                    self.on_resize()
-                if event.type == pygame.KEYDOWN:
-                    if event.key in (pygame.K_LEFT, pygame.K_a):
-                        self.movement[0] = True
-                    if event.key in (pygame.K_RIGHT, pygame.K_d):
-                        self.movement[1] = True
-                    if event.key in (pygame.K_UP, pygame.K_w):
-                        self.movement[2] = True
-                    if event.key in (pygame.K_DOWN, pygame.K_s):
-                        self.movement[3] = True
-                    if event.key == pygame.K_f:
-                        self.flock.feed()
-                if event.type == pygame.KEYUP:
-                    if event.key in (pygame.K_LEFT, pygame.K_a):
-                        self.movement[0] = False
-                    if event.key in (pygame.K_RIGHT, pygame.K_d):
-                        self.movement[1] = False
-                    if event.key in (pygame.K_UP, pygame.K_w):
-                        self.movement[2] = False
-                    if event.key in (pygame.K_DOWN, pygame.K_s):
-                        self.movement[3] = False
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    if event.type in (pygame.VIDEOEXPOSE, pygame.VIDEORESIZE):
+                        self.on_resize()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key in (pygame.K_LEFT, pygame.K_a):
+                            self.movement[0] = True
+                        if event.key in (pygame.K_RIGHT, pygame.K_d):
+                            self.movement[1] = True
+                        if event.key in (pygame.K_UP, pygame.K_w):
+                            self.movement[2] = True
+                        if event.key in (pygame.K_DOWN, pygame.K_s):
+                            self.movement[3] = True
+                        if event.key == pygame.K_f:
+                            self.flock.feed()
+                    if event.type == pygame.KEYUP:
+                        if event.key in (pygame.K_LEFT, pygame.K_a):
+                            self.movement[0] = False
+                        if event.key in (pygame.K_RIGHT, pygame.K_d):
+                            self.movement[1] = False
+                        if event.key in (pygame.K_UP, pygame.K_w):
+                            self.movement[2] = False
+                        if event.key in (pygame.K_DOWN, pygame.K_s):
+                            self.movement[3] = False
 
-            self.clock.tick(FPS)
-
-        pygame.quit()
+                self.clock.tick(FPS)
+        finally:
+            # clean up
+            self.video.release()
+            pygame.quit()

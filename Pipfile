@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pygame-ce = "*"
 numpy = "*"
+opencv-contrib-python = "*"
 
 [dev-packages]
 

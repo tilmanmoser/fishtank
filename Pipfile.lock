@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fa96a967be967481011e8f8cadb5ec59d206c1514df4be9ea4555c96a9ed2759"
+            "sha256": "5014117340dfede41d74b62714fe3c1d0da1884dc001194a360a952a2a614e4c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -58,6 +58,20 @@
             "index": "pypi",
             "markers": "python_version >= '3.9'",
             "version": "==1.26.4"
+        },
+        "opencv-contrib-python": {
+            "hashes": [
+                "sha256:4ce33844dbdf4bcbb0bd1ea7249367ffccab82de09f531ad25ac258aca5f813c",
+                "sha256:760e76c535da81e50f5a5a0acd85bada376f505736875eb446811b4b76fb9bb5",
+                "sha256:86078d3653ec3107877536c9178622b1f98b51acf59e554ddbc552785cba55fa",
+                "sha256:89ca1508dd895ae42176640bdd503cac82772f6efa25120738a469a6a69de321",
+                "sha256:b52e381144f774b486729ccee69911bdc7d16b5ced4830502e906ad803373ab0",
+                "sha256:fdd9b14028f74af8dbb69f90e6e4a956ce2eb5b59947df28ba0b79d337431477",
+                "sha256:ff1c00b06e2c3f4ad47de64fa9c527d67f7c6fce93f513b64163d41bea7c41b2"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.6'",
+            "version": "==4.9.0.80"
         },
         "pygame-ce": {
             "hashes": [

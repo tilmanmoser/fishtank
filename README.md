@@ -16,3 +16,6 @@ pipenv run python main.py
 ```
 
 
+# Resources
+
+[Video](data/video/underwater.mp4) from pixabay (no attribution required)
