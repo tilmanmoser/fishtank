@@ -3,7 +3,10 @@ import re
 import cv2
 import pygame
 
+from watchdog.observers import Observer
 from scripts.flock import Flock
+from scripts.scanner import Scanner
+from scripts.imageFileEventHandler import ImageFileEventHandler
 
 FPS = 25  # adjust to video FPS
 
@@ -32,7 +35,8 @@ class Aquarium:
 
     def load_boids(self):
         path = os.path.join("data/outbound")
-        for file in sorted(os.listdir(path), reverse=True)[:25]:
+        # load 25 fishes reverse sorted by date, but in sorted order :-)
+        for file in sorted(sorted(os.listdir(path), reverse=True)[:25]):
             self.load_boid(os.path.join(path, file))
 
     def load_boid(self, file):
@@ -80,6 +84,15 @@ class Aquarium:
             return self.get_video_frame()
 
     def run(self):
+        # file observer for adding boids
+        observer = Observer()
+        image_event_handler = ImageFileEventHandler(
+            Scanner(), os.path.join("data", "outbound"), remove=True, callback=self.load_boid
+        )
+        observer.schedule(image_event_handler, os.path.join("data", "inbound"), recursive=True)
+        observer.start()
+
+        # main loop
         try:
             running = True
             while running:
@@ -116,5 +129,7 @@ class Aquarium:
                 self.clock.tick(FPS)
         finally:
             # clean up
+            observer.stop()
+            observer.join()
             self.video.release()
             pygame.quit()

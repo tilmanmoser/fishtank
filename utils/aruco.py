@@ -3,7 +3,7 @@ from pathlib import Path
 import cv2
 
 
-def generate_aruco_markers(dictionary_type=cv2.aruco.DICT_4X4_1000, amount=16, size=200):
+def generate_aruco_markers(dictionary_type=cv2.aruco.DICT_4X4_50, amount=16, size=200):
     dictionary = cv2.aruco.getPredefinedDictionary(dictionary_type)
     markers = []
     for i in range(amount):
