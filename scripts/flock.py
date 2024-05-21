@@ -50,7 +50,6 @@ class Flock:
     def feed(self):
         item = [random.randint(self.min_position[0], self.max_position[0]), 0]
         self.food.append(item)
-        print(self.food)
 
     def random2d(self, lower_limits=np.array([0, 0]), upper_limits=np.array([0, 0])):
         range = upper_limits - lower_limits
