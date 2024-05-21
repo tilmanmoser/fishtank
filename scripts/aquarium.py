@@ -22,8 +22,10 @@ class Aquarium:
         self.screen = pygame.display.set_mode(self.display.get_size(), pygame.RESIZABLE)
         self.on_resize()
 
-        # background video
+        # background video & audio
         self.video = cv2.VideoCapture(os.path.join("data/video/underwater.mp4"))
+        self.audio = pygame.mixer.Sound(os.path.join("data/audio/aquarium-ambience.mp3"))
+        self.muted = True
 
         # objects
         self.movement = [False, False, False, False]
@@ -83,6 +85,14 @@ class Aquarium:
             self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
             return self.get_video_frame()
 
+    def toggle_audio(self):
+        self.muted = not self.muted
+        if self.muted:
+            self.audio.stop()
+        else:
+            self.audio.set_volume(0.25)
+            self.audio.play(-1)
+
     def run(self):
         # file observer for adding boids
         observer = Observer()
@@ -91,6 +101,9 @@ class Aquarium:
         )
         observer.schedule(image_event_handler, os.path.join("data", "inbound"), recursive=True)
         observer.start()
+
+        # audio
+        self.toggle_audio()
 
         # main loop
         try:
@@ -116,6 +129,8 @@ class Aquarium:
                             self.movement[3] = True
                         if event.key == pygame.K_f:
                             self.flock.feed()
+                        if event.key == pygame.K_m:
+                            self.toggle_audio()
                     if event.type == pygame.KEYUP:
                         if event.key in (pygame.K_LEFT, pygame.K_a):
                             self.movement[0] = False
