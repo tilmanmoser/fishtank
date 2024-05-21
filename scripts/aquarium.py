@@ -35,7 +35,7 @@ class Aquarium:
 
     def load_boids(self):
         path = os.path.join("data/outbound")
-        # load 25 fishes reverse sorted by date, but in sorted order :-)
+        # load 25 boids reverse sorted by date, but in sorted order, so that the oldest is at index 0
         for file in sorted(sorted(os.listdir(path), reverse=True)[:25]):
             self.load_boid(os.path.join(path, file))
 
