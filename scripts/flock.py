@@ -21,7 +21,7 @@ class Flock:
         # forces
         self.turnaround_strength = 20
         self.cohesion_strength = 0.01
-        self.separation_strength = 1.0
+        self.separation_strength = 2.0
         self.separation_distance = 50.0
         self.alignment_strength = 0.125
         self.alignment_distance = 50
@@ -30,6 +30,7 @@ class Flock:
         self.attraction_strength = 0.1
 
         # boids
+        self.boids = []
         self.positions = np.empty((0, 2), float)
         self.velocities = np.empty((0, 2), float)
 
@@ -47,13 +48,15 @@ class Flock:
         # debug
         self.font = pygame.font.Font(pygame.font.get_default_font(), 20)
 
-    def add(self):
-        if len(self.positions) >= self.max_boids:
+    def add(self, image):
+        if len(self.boids) >= self.max_boids:
             # remove first(=oldest) element from array
+            self.boids.pop(0)
             self.positions = np.delete(self.positions, 0, 0)
             self.velocities = np.delete(self.velocities, 0, 0)
 
         # append new boid
+        self.boids.append(image)
         self.positions = np.append(self.positions, self.random2d(self.min_position, self.max_position), axis=0)
         self.velocities = np.append(self.velocities, self.random2d(self.min_velocity, self.max_velocity), axis=0)
 
@@ -180,10 +183,9 @@ class Flock:
             pygame.draw.circle(surface, "brown", pos, 5)
 
         # boids
-        for pos, velocity in zip(self.positions, self.velocities):
-            angle = math.atan2(velocity[1], velocity[0])
-            ax = math.cos(angle) * 30
-            ay = math.sin(angle) * 30
-            pygame.draw.circle(surface, "blue", pos, 10)
-            pygame.draw.line(surface, "red", pos, pos + np.array([ax, ay]), 2)
-            surface.blit(self.font.render(f"{int(velocity[0])},{int(velocity[1])}", True, "white"), pos)
+        for boid, pos, velocity in zip(self.boids, self.positions, self.velocities):
+            angle = (math.atan2(-velocity[1], velocity[0]) / math.pi * 180) % 360
+            if angle < 0:
+                angle += 360
+            img = pygame.transform.rotate(pygame.transform.flip(boid.copy(), False, velocity[0] < 0), angle)
+            surface.blit(img, (pos[0] - img.get_width() // 2, pos[1] - img.get_height() // 2))

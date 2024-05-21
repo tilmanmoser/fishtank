@@ -1,4 +1,5 @@
 import os
+import re
 import cv2
 import pygame
 
@@ -24,11 +25,27 @@ class Aquarium:
         # objects
         self.movement = [False, False, False, False]
         self.flock = Flock(max=25, area=(100, 100, self.display.get_width() - 100, self.display.get_height() - 100))
-        for i in range(50):
-            self.flock.add()
+        self.load_boids()
 
         # ticks / fps
         self.clock = pygame.Clock()
+
+    def load_boids(self):
+        path = os.path.join("data/outbound")
+        for file in sorted(os.listdir(path), reverse=True)[:25]:
+            self.load_boid(os.path.join(path, file))
+
+    def load_boid(self, file):
+        match = re.search("^.*[0-9]{20}-([0-9]{1}).png", file)
+        if match:
+            # load image
+            img = pygame.image.load(os.path.join(file)).convert_alpha()
+            # scale down
+            img = pygame.transform.smoothscale(img, (100, 142))
+            # make them look "right" (which is 0 degree angle in pygame)
+            img = pygame.transform.flip(pygame.transform.rotate(img, -90), False, True)
+            # add fish to flock, match.group(1) == type of fisch from filename
+            self.flock.add(img)
 
     def on_resize(self):
         self.scale = min(
