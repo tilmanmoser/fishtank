@@ -5,7 +5,11 @@ import pygame
 
 
 class Flock:
-    def __init__(self, max=25, area=(0, 0, 0, 0)) -> None:
+    def __init__(
+        self,
+        max=25,
+        area=(0, 0, 0, 0),
+    ) -> None:
         # limits
         self.max_boids = max
         self.min_position = np.array(area[:2])
@@ -29,8 +33,9 @@ class Flock:
         self.velocities = np.empty((0, 2), float)
 
         # predator
-        self.predator = np.array(self.max_position - (self.max_position - self.min_position) / 2)
+        self.predator = np.array(self.max_position, float)
         self.predator_speed = 50
+        self.predator_flip = True
 
         # food
         self.food = []

@@ -7,16 +7,30 @@ FPS = 60
 
 class Aquarium:
     def __init__(self) -> None:
+        # display
         pygame.init()
         pygame.display.set_caption("Flock")
-        self.screen = pygame.display.set_mode((800, 600))
-        self.clock = pygame.Clock()
+        self.scale = 1
+        self.margin = [0, 0]
+        self.display = pygame.Surface((1280, 720))
+        self.screen = pygame.display.set_mode(self.display.get_size(), pygame.RESIZABLE)
+        self.on_resize()
 
-        self.flock = Flock(max=25, area=(100, 100, self.screen.get_width() - 100, self.screen.get_height() - 100))
+        # objects
+        self.movement = [False, False, False, False]
+        self.flock = Flock(max=25, area=(100, 100, self.display.get_width() - 100, self.display.get_height() - 100))
         for i in range(50):
             self.flock.add()
 
-        self.movement = [False, False, False, False]
+        # ticks / fps
+        self.clock = pygame.Clock()
+
+    def on_resize(self):
+        self.scale = min(
+            self.screen.get_width() / self.display.get_width(), self.screen.get_height() / self.display.get_height()
+        )
+        self.margin[0] = int((self.screen.get_width() - self.display.get_width() * self.scale) // 2)
+        self.margin[1] = int((self.screen.get_height() - self.display.get_height() * self.scale) // 2)
 
     def update(self):
         self.flock.update(
@@ -24,8 +38,11 @@ class Aquarium:
         )
 
     def render(self):
+        self.display.fill((0, 0, 0, 0))
+        self.flock.render(self.display)
+
         self.screen.fill((0, 0, 0, 0))
-        self.flock.render(self.screen)
+        self.screen.blit(pygame.transform.smoothscale_by(self.display, self.scale), self.margin)
         pygame.display.flip()
 
     def run(self):
@@ -38,6 +55,8 @@ class Aquarium:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type in (pygame.VIDEOEXPOSE, pygame.VIDEORESIZE):
+                    self.on_resize()
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_LEFT, pygame.K_a):
                         self.movement[0] = True
