@@ -12,6 +12,14 @@ class Flock:
         self.min_velocity = np.array([0, -20])
         self.max_velocity = np.array([10, 20])
 
+        # forces
+        self.turnaround_strength = 2
+        self.cohesion_strength = 0.01
+        self.separation_strength = 2.0
+        self.separation_distance = 30.0
+        self.alignment_strength = 0.125
+        self.alignment_distance = 50
+
         # boids
         self.positions = np.empty((0, 2), float)
         self.velocities = np.empty((0, 2), float)
@@ -33,8 +41,46 @@ class Flock:
         return rand
 
     def update(self, timestep):
+        self.velocities += timestep * sum(
+            force()
+            for force in [self.turnaround_force, self.cohesion_force, self.separation_force, self.alignment_force]
+        )
+
         # boid movement
         self.positions += timestep * self.velocities
+
+    def turnaround_force(self):
+        # boids should turnaround when moving out the designated area
+        forces = []
+        for pos in self.positions:
+            force = [0, 0]
+            if pos[0] < self.min_position[0]:
+                force[0] = self.turnaround_strength
+            if pos[0] > self.max_position[0]:
+                force[0] = -self.turnaround_strength
+            if pos[1] < self.min_position[1]:
+                force[1] = self.turnaround_strength
+            if pos[1] > self.max_position[1]:
+                force[1] = -self.turnaround_strength
+            forces.append(force)
+        return np.array(forces)
+
+    def cohesion_force(self):
+        # boids attract each other
+        return self.cohesion_strength * (self.positions.mean(axis=0)[np.newaxis] - self.positions)
+
+    def separation_force(self):
+        # boids avoid collisions
+        displacements = self.positions[np.newaxis] - self.positions[:, np.newaxis]
+        are_close = (displacements**2).sum(-1) ** 0.5 <= self.separation_distance
+        return self.separation_strength * np.where(are_close[..., None], displacements, 0).sum(0)
+
+    def alignment_force(self):
+        # boids adapt their velocity to their nearby peers
+        displacements = self.positions[np.newaxis] - self.positions[:, np.newaxis]
+        velocity_differences = self.velocities[np.newaxis] - self.velocities[:, np.newaxis]
+        are_close = (displacements**2).sum(-1) ** 0.5 <= self.alignment_distance
+        return -self.alignment_strength * np.where(are_close[..., None], velocity_differences, 0).mean(0)
 
     def render(self, surface):
         for pos, velocity in zip(self.positions, self.velocities):
