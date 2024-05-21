@@ -1,4 +1,5 @@
 import math
+import os
 import random
 import numpy as np
 import pygame
@@ -21,7 +22,7 @@ class Flock:
         self.turnaround_strength = 20
         self.cohesion_strength = 0.01
         self.separation_strength = 1.0
-        self.separation_distance = 30.0
+        self.separation_distance = 50.0
         self.alignment_strength = 0.125
         self.alignment_distance = 50
         self.flee_strength = 1.0
@@ -35,6 +36,8 @@ class Flock:
         # predator
         self.predator = np.array(self.max_position, float)
         self.predator_speed = 50
+        self.predator_images = self.load_images(os.path.join("data/images/submarine"))
+        self.predator_frame = 0
         self.predator_flip = True
 
         # food
@@ -65,15 +68,12 @@ class Flock:
         return rand
 
     def update(self, timestep, predator_movement):
-        self.predator += timestep * np.array(predator_movement) * self.predator_speed
-        self.predator = np.clip(self.predator, self.min_position, self.max_position)
+        self.update_predator(timestep, predator_movement)
+        self.update_food(timestep)
+        self.update_boids(timestep)
 
-        for item in self.food.copy():
-            item[1] += timestep * self.food_speed
-            item[0] += math.cos(item[1] / math.pi) / 100 * self.food_speed
-            if item[1] > self.max_position[1]:
-                self.food.remove(item)
-
+    def update_boids(self, timestep):
+        # apply forces
         self.velocities += timestep * sum(
             force()
             for force in [
@@ -85,10 +85,33 @@ class Flock:
                 self.turnaround_force,
             ]
         )
+
+        # restrict to min/max velocity
         self.velocities = np.clip(self.velocities, self.min_velocity, self.max_velocity)
 
-        # boid movement
+        # move boids
         self.positions += timestep * self.velocities
+
+    def update_food(self, timestep):
+        for item in self.food.copy():
+            item[1] += timestep * self.food_speed
+            item[0] += math.cos(item[1] / math.pi) / 100 * self.food_speed
+            if item[1] > self.max_position[1]:
+                self.food.remove(item)
+
+    def update_predator(self, timestep, predator_movement):
+        # predator movement
+        self.predator += timestep * np.array(predator_movement) * self.predator_speed
+        self.predator = np.clip(self.predator, self.min_position, self.max_position)
+
+        # flip
+        if predator_movement[0] < 0:
+            self.predator_flip = True
+        elif predator_movement[0] > 0:
+            self.predator_flip = False
+
+        # update animation frame
+        self.predator_frame = (self.predator_frame + 1) % len(self.predator_images)
 
     def turnaround_force(self):
         # boids should turnaround when moving out the designated area
@@ -137,9 +160,20 @@ class Flock:
         are_close = (displacements**2).sum(-1) ** 0.5 <= self.alignment_distance
         return -self.alignment_strength * np.where(are_close[..., None], velocity_differences, 0).mean(0)
 
+    def load_images(self, path):
+        images = []
+        for file in sorted(os.listdir(path)):
+            if file.endswith(".png"):
+                images.append(pygame.image.load(os.path.join(path, file)).convert_alpha())
+        return images
+
     def render(self, surface):
         # predator
-        pygame.draw.circle(surface, "green", self.predator, 10)
+        predator_image = self.predator_images[self.predator_frame]
+        surface.blit(
+            pygame.transform.flip(predator_image, self.predator_flip, False),
+            (self.predator[0] - predator_image.get_width() / 2, self.predator[1] - predator_image.get_height() / 2),
+        )
 
         # food
         for pos in self.food:
