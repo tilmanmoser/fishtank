@@ -42,6 +42,9 @@ class Flock:
         self.predator_flip = True
 
         # food
+        self.food_surface = pygame.Surface((10, 10))
+        self.food_surface.set_colorkey((0, 0, 0, 0))
+        pygame.draw.circle(self.food_surface, "brown", (5, 5), 5)
         self.food = []
         self.food_speed = 20
 
@@ -180,7 +183,10 @@ class Flock:
 
         # food
         for pos in self.food:
-            pygame.draw.circle(surface, "brown", pos, 5)
+            surface.blit(
+                self.food_surface,
+                (pos[0] - self.food_surface.get_width() / 2, pos[1] - self.food_surface.get_height() / 2),
+            )
 
         # boids
         for boid, pos, velocity in zip(self.boids, self.positions, self.velocities):
