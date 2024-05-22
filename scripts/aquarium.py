@@ -94,7 +94,7 @@ class Aquarium:
         if self.muted:
             self.audio.stop()
         else:
-            self.audio.set_volume(0.25)
+            self.audio.set_volume(1.0)
             self.audio.play(-1)
 
     def run(self):
