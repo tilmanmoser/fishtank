@@ -27,7 +27,8 @@ class Flock:
         self.alignment_distance = 50
         self.flee_strength = 1.0
         self.flee_distance = 150.0
-        self.attraction_strength = 0.1
+        self.attraction_distance = 200.0
+        self.attraction_strength = 2.0
 
         # boids
         self.boids = []
@@ -47,6 +48,7 @@ class Flock:
         pygame.draw.circle(self.food_surface, "brown", (5, 5), 5)
         self.food = []
         self.food_speed = 20
+        self.food_collision_distance = 20
 
         # debug
         self.font = pygame.font.Font(pygame.font.get_default_font(), 20)
@@ -104,6 +106,14 @@ class Flock:
             item[0] += math.cos(item[1] / math.pi) / 100 * self.food_speed
             if item[1] > self.max_position[1]:
                 self.food.remove(item)
+                continue
+            for pos in self.positions:
+                if (
+                    abs(pos[0] - item[0]) < self.food_collision_distance
+                    and abs(pos[1] - item[1]) < self.food_collision_distance
+                    and item in self.food
+                ):
+                    self.food.remove(item)
 
     def update_predator(self, timestep, predator_movement):
         # predator movement
@@ -143,10 +153,9 @@ class Flock:
 
     def attraction_force(self):
         if len(self.food):
-            # boids are attracted by food
-            return self.attraction_strength * (
-                np.array(self.food).reshape(len(self.food), 2).mean(axis=0)[np.newaxis] - self.positions
-            )
+            displacements = self.positions[np.newaxis] - np.array(self.food)[:, np.newaxis]
+            are_close = (displacements**2).sum(-1) ** 0.5 <= self.attraction_distance
+            return -self.attraction_strength * np.where(are_close[..., None], displacements, 0).sum(0)
         return np.empty(shape=(len(self.positions), 2))
 
     def cohesion_force(self):
