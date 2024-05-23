@@ -53,4 +53,4 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 [Audio](https://pixabay.com/de/sound-effects/aquarium-ambience-sounds-10-min-193236/) by GioeleFazzeri
 
-[Fish Templates](data/images/fishes) from [https://freesvg.org/](https://freesvg.org/) (CC0)
+[Fishes](data/images/fishes) from [https://freesvg.org/](https://freesvg.org/) (CC0)
