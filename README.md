@@ -20,10 +20,10 @@ pipenv run python main.py
 
 # Key bindings
 
-`c`: Capture drawing from webcam
-`f`: Feed fishes
-`m`: Mute/Unmute
-`w`, `a`, `s`, `d`: Move submarine
+- `c`: Capture drawing from webcam
+- `f`: Feed fishes
+- `m`: Mute/Unmute
+- `w`, `a`, `s`, `d`: Move submarine
 
 # Adding fishes to the fish tank
 
