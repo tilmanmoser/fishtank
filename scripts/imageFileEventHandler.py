@@ -14,15 +14,12 @@ class ImageFileEventHandler(FileSystemEventHandler):
 
     def on_created(self, event: FileSystemEvent) -> None:
         try:
-            img, template_id = self.scanner.scan(event.src_path)
-            if img is not None:
-                date = datetime.now().strftime("%Y%m%d%H%M%S%f")
-                file = os.path.join(self.outbound, f"{date}-{template_id}.png")
-                cv2.imwrite(file, img)
+            filename = self.scanner.scan(event.src_path)
+            if filename is not None:
                 if self.remove:
                     os.remove(event.src_path)
                 if self.callback:
-                    self.callback(file)
+                    self.callback(filename)
             else:
                 print(f"Failed to scan {event.src_path}")
         except Exception as error:

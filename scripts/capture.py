@@ -50,7 +50,6 @@ class Capture:
         if self.isCapturing() and time.time() - self.last_frame_ts > (1.0 / 25):
             success, frame = self.capture.read()
             if success:
-                # hints
                 show_instructions = False
                 show_come_closer = False
 
@@ -89,12 +88,10 @@ class Capture:
                         date = datetime.now().strftime("%Y%m%d%H%M%S%f")
                         temp_file = os.path.join(self.temp, f"{date}.png")
                         cv2.imwrite(temp_file, frame)
-                        image, template_id = self.scanner.scan(temp_file)
-                        if image is not None:
-                            out_file = os.path.join(self.outbound, f"{date}-{template_id}.png")
-                            cv2.imwrite(out_file, image)
+                        image_file = self.scanner.scan(temp_file)
+                        if image_file is not None:
                             if self.callback:
-                                self.callback(out_file)
+                                self.callback(image_file)
                                 self.close()
                     else:
                         show_come_closer = True

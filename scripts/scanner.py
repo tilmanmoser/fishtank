@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import cv2
 from cv2.typing import MatLike
@@ -7,7 +8,8 @@ import numpy as np
 
 class Scanner:
 
-    def __init__(self) -> None:
+    def __init__(self, outbound) -> None:
+        self.outbound = outbound
         self.size = [600, 848]
         self.corners = np.float32([(0, 0), (self.size[0], 0), (self.size[0], self.size[1]), (0, self.size[1])])
         self.masks = self.load_masks()
@@ -68,22 +70,26 @@ class Scanner:
                 case _:
                     template_id = id - 4
 
-        if len(translate_src) != 4:
-            return None, None
+        if len(translate_src) == 4:
+            # align image
+            matrix = cv2.getPerspectiveTransform(np.float32(translate_src), np.float32(translate_dst))
+            aligned = cv2.warpPerspective(image, matrix, self.size, flags=cv2.INTER_LINEAR)
 
-        # align image
-        matrix = cv2.getPerspectiveTransform(np.float32(translate_src), np.float32(translate_dst))
-        aligned = cv2.warpPerspective(image, matrix, self.size, flags=cv2.INTER_LINEAR)
+            # if we recognized a template id and have a mask for it
+            if template_id is not None and template_id < len(self.masks):
+                # cutout a silhouette
+                mask = self.masks[template_id]
+                aligned = cv2.bitwise_and(aligned, aligned, mask=mask)
 
-        # if we recognized a template id and have a mask for it
-        if template_id is not None and template_id < len(self.masks):
-            # cutout a silhouette
-            mask = self.masks[template_id]
-            aligned = cv2.bitwise_and(aligned, aligned, mask=mask)
+                # set alpha channel for transparent background
+                alpha = np.sum(aligned, axis=-1) > 0
+                alpha = np.uint8(alpha * 255)
+                aligned = np.dstack((aligned, alpha))
 
-            # set alpha channel for transparent background
-            alpha = np.sum(aligned, axis=-1) > 0
-            alpha = np.uint8(alpha * 255)
-            aligned = np.dstack((aligned, alpha))
+                # write file
+                date = datetime.now().strftime("%Y%m%d%H%M%S%f")
+                file = os.path.join(self.outbound, f"{date}-{template_id}.png")
+                cv2.imwrite(file, aligned)
+                return file
 
-        return aligned, template_id
+        return None

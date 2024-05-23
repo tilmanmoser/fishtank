@@ -38,7 +38,7 @@ class Aquarium:
         # fish importing
         inbound = os.path.join("data", "inbound")
         outbound = os.path.join("data", "outbound")
-        scanner = Scanner()
+        scanner = Scanner(outbound)
         self.observer = Observer()
         self.observer.schedule(ImageFileEventHandler(scanner, outbound, True, self.load_boid), inbound, recursive=True)
         self.capture = Capture(
