@@ -1,0 +1,6 @@
+-i https://pypi.org/simple
+imutils==0.5.4
+numpy==1.26.4; python_version >= '3.9'
+opencv-contrib-python==4.9.0.80; python_version >= '3.6'
+pygame-ce==2.4.1; python_version >= '3.8'
+watchdog==4.0.0; python_version >= '3.8'
