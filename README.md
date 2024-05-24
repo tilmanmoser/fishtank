@@ -5,8 +5,12 @@ An aquarium application that imports self-painted fish from photo or webcam and 
 
 # Installation
 
+Requirements:
+
+- python3 >= 3.9
+- ffmpeg
+
 ```
-brew install ffmpeg
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt
