@@ -1,6 +1,5 @@
 import os
 import re
-import time
 import cv2
 import pygame
 
@@ -20,8 +19,9 @@ class Aquarium:
         self.display = pygame.Surface((1280, 720))
         self.scale = 1
         self.margin = [0, 0]
-        pygame.display.set_caption("Flock")
-        self.screen = pygame.display.set_mode(self.display.get_size(), pygame.RESIZABLE)
+        pygame.display.set_caption("Fish Tank")
+        info = pygame.display.Info()
+        self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
         self.on_resize()
 
         # hide mouse
@@ -68,6 +68,8 @@ class Aquarium:
                     if event.type in (pygame.VIDEOEXPOSE, pygame.VIDEORESIZE):
                         self.on_resize()
                     if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            running = False
                         if event.key in (pygame.K_LEFT, pygame.K_a):
                             self.movement[0] = True
                         if event.key in (pygame.K_RIGHT, pygame.K_d):
